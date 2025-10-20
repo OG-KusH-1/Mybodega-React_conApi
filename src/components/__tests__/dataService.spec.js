@@ -1,8 +1,17 @@
+import { vi } from 'vitest'; // Necesario para hacer mocks
 import DataService from '../../services/DataService';
 
 describe('DataService basic', () => {
   beforeEach(() => {
-    localStorage.clear();
+    // Simulamos localStorage antes de cada test
+    global.localStorage = {
+      clear: vi.fn(),
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    };
+
+    localStorage.clear(); // Ahora sí es una función mockeada
   });
 
   it('should add or update product', () => {
