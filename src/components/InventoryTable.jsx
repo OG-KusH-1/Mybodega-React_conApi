@@ -1,76 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function InventoryTable({ inventario, onConsume, onDelete, onReabastecer }) {
-  const [busqueda, setBusqueda] = useState('');
+  const [categoriaFiltro, setCategoriaFiltro] = useState("Todos");
+  const [busqueda, setBusqueda] = useState("");
 
-  // Filtrar productos según el término de búsqueda
-  const productosFiltrados = inventario.filter(item =>
-    item.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const categorias = ["Todos", "Alimentos", "Bebidas", "Limpieza", "Otros"];
+
+  const inventarioFiltrado = inventario.filter((p) => {
+    const coincideCategoria =
+      categoriaFiltro === "Todos" || p.categoria === categoriaFiltro;
+    const coincideNombre = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
+    return coincideCategoria && coincideNombre;
+  });
 
   return (
-    <div>
-      {/* Barra de búsqueda */}
-      <div className="mb-3">
-        <div className="input-group">
-          <span className="input-group-text">🔍</span>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Buscar producto por nombre..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          {busqueda && (
-            <button 
-              className="btn btn-outline-secondary" 
-              onClick={() => setBusqueda('')}
-              title="Limpiar búsqueda"
-            >
-              ✖️
-            </button>
-          )}
-        </div>
+    <div className="table-responsive">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h4 className="mb-0">Inventario</h4>
+
+        <input
+          type="text"
+          className="form-control w-auto"
+          placeholder="Buscar producto..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+
+        <select
+          className="form-select w-auto"
+          value={categoriaFiltro}
+          onChange={(e) => setCategoriaFiltro(e.target.value)}
+        >
+          {categorias.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Tabla de inventario */}
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered">
-          <thead className="table-dark">
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Categoría</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productosFiltrados.length === 0 && (
-              <tr>
-                <td colSpan="4" className="text-center">
-                  {busqueda ? 'No se encontraron productos que coincidan con la búsqueda' : 'No hay productos en el inventario'}
+      <table className="table table-striped table-bordered align-middle">
+        <thead className="table-dark">
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {inventarioFiltrado.length > 0 ? (
+            inventarioFiltrado.map((producto, index) => (
+              <tr
+                key={index}
+                className={producto.cantidad === 0 ? "table-danger fw-bold" : ""}
+              >
+                <td>{producto.nombre}</td>
+                <td>{producto.cantidad}</td>
+                <td>{producto.categoria}</td>
+                <td>
+                  <div className="d-flex gap-2 justify-content-center">
+                    <button
+                      className="btn btn-sm btn-warning"
+                      onClick={() => onConsume(index)}
+                    >
+                      Consumir
+                    </button>
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => onReabastecer(index)}
+                    >
+                      +1
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => onDelete(index)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
                 </td>
               </tr>
-            )}
-            {productosFiltrados.map((item, idx) => {
-              // Obtener el índice original del item en el inventario completo
-              const indiceOriginal = inventario.indexOf(item);
-              return (
-                <tr key={idx} style={{ background: item.cantidad === 0 ? '#ffebee' : 'transparent' }}>
-                  <td>{item.nombre}</td>
-                  <td>{item.cantidad}</td>
-                  <td>{item.categoria}</td>
-                  <td>
-                    <button className="btn btn-warning btn-sm me-1" onClick={() => onConsume(indiceOriginal)} title="Consumir">➖</button>
-                    <button className="btn btn-success btn-sm me-1" onClick={() => onReabastecer(indiceOriginal)} title="Reabastecer">➕</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => onDelete(indiceOriginal)} title="Eliminar">🗑️</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" className="text-center">
+                No hay productos que coincidan con la búsqueda o categoría seleccionada.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
