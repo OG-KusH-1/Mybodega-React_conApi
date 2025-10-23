@@ -7,6 +7,8 @@ import Reports from './components/Reports';
 import LoginForm from './components/LoginForm';
 import DataService from './services/DataService';
 import AuthService from './services/AuthService';
+import ShoppingList from './components/ShoppingList';
+import Logs from './components/Logs';
 
 export default function App() {
   const [inventario, setInventario] = useState(DataService.loadInventario());
@@ -85,6 +87,8 @@ export default function App() {
           element={isAuthenticated ? <Reports /> : <Navigate to="/login" />}
         />
         <Route path="/login" element={<LoginForm onLoginSuccess={handleLogin} />} />
+        <Route path='/compras' element={<ShoppingList />} />
+        <Route path='/logs' element={<Logs />} />
       </Routes>
     </Router>
   );

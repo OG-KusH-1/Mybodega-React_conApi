@@ -8,6 +8,8 @@ export default function Header({ onLogout }) {
         <div className="d-flex gap-3">
           <Link className="btn btn-outline-light" to="/">Inventario</Link>
           <Link className="btn btn-outline-light" to="/reportes">Reportes</Link>
+          <a className="btn btn-outline-light" href="/compras">Lista de Compras</a>
+          <a className="btn btn-outline-light" href="/logs">Movimientos</a>
           <button className="btn btn-danger" onClick={onLogout}>Cerrar sesión</button>
         </div>
       </div>
