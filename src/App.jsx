@@ -9,6 +9,7 @@ import DataService from './services/DataService';
 import AuthService from './services/AuthService';
 import ShoppingList from './components/ShoppingList';
 import Logs from './components/Logs';
+import Register from './components/Registro.jsx';
 
 export default function App() {
   const [inventario, setInventario] = useState(DataService.loadInventario());
@@ -59,6 +60,7 @@ export default function App() {
     <Router>
       {isAuthenticated && <Header onLogout={handleLogout} />}
       <Routes>
+        
         <Route
           path="/"
           element={
@@ -82,11 +84,13 @@ export default function App() {
             )
           }
         />
+        
         <Route
           path="/reportes"
           element={isAuthenticated ? <Reports /> : <Navigate to="/login" />}
         />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/register" element={<Register />} /> {/* ✅ Agregar esta línea */}
         <Route path='/compras' element={<ShoppingList />} />
         <Route path='/logs' element={<Logs />} />
       </Routes>

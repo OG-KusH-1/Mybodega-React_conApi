@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import * as XLSX from "xlsx";
 
 export default function InventoryTable({ inventario, onConsume, onDelete, onReabastecer }) {
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todos");
@@ -12,6 +13,14 @@ export default function InventoryTable({ inventario, onConsume, onDelete, onReab
     const coincideNombre = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
     return coincideCategoria && coincideNombre;
   });
+
+  // ✅ Función para exportar a Excel
+  const exportarExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(inventarioFiltrado);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario");
+    XLSX.writeFile(workbook, `inventario_${new Date().toLocaleDateString()}.xlsx`);
+  };
 
   return (
     <div className="table-responsive">
@@ -37,6 +46,11 @@ export default function InventoryTable({ inventario, onConsume, onDelete, onReab
             </option>
           ))}
         </select>
+
+        {/* ✅ Botón de exportación a Excel */}
+        <button className="btn btn-success" onClick={exportarExcel}>
+          📊 Exportar a Excel
+        </button>
       </div>
 
       <table className="table table-striped table-bordered align-middle">
