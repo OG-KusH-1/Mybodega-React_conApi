@@ -5,6 +5,7 @@ class AuthService {
 
   login(username, password) {
     if (username === this.user.username && password === this.user.password) {
+      localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("user", JSON.stringify(this.user));
       return true;
     }
@@ -13,6 +14,8 @@ class AuthService {
 
   logout() {
     localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
   }
 
   getUser() {
@@ -20,7 +23,8 @@ class AuthService {
   }
 
   isAuthenticated() {
-    return !!localStorage.getItem("user");
+    // ✅ Cambiar para que busque isLoggedIn
+    return localStorage.getItem("isLoggedIn") === "true";
   }
 }
 

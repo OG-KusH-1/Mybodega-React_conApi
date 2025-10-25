@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom'; // ← Solo importar estos
 import Header from './components/Header';
 import ProductForm from './components/ProductForm';
 import InventoryTable from './components/InventoryTable';
@@ -47,7 +47,6 @@ export default function App() {
     setInventario(DataService.loadInventario());
   }
 
-  // ✅ Agregar esta función
   function handleEdit(index, datosActualizados) {
     const nuevoInventario = [...inventario];
     nuevoInventario[index] = datosActualizados;
@@ -65,44 +64,52 @@ export default function App() {
   }
 
   return (
-    <Router>
-      {isAuthenticated && <Header onLogout={handleLogout} />}
-      <Routes>
-        
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <div className="container">
-                <div className="row">
-                  <div className="col-md-4"><ProductForm onAdd={handleAdd} /></div>
-                  <div className="col-md-8">
-                    <h2>Inventario</h2>
-                    <InventoryTable
-                      inventario={inventario}
-                      onConsume={handleConsume}
-                      onDelete={handleDelete}
-                      onReabastecer={handleReabastecer}
-                      onEdit={handleEdit} // ✅ Agregar esta prop
-                    />
-                  </div>
+  <>
+    {isAuthenticated && <Header onLogout={handleLogout} />}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <div className="container">
+              <div className="row">
+                <div className="col-md-4"><ProductForm onAdd={handleAdd} /></div>
+                <div className="col-md-8">
+                  <h2>Inventario</h2>
+                  <InventoryTable
+                    inventario={inventario}
+                    onConsume={handleConsume}
+                    onDelete={handleDelete}
+                    onReabastecer={handleReabastecer}
+                    onEdit={handleEdit}
+                  />
                 </div>
               </div>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        
-        <Route
-          path="/reportes"
-          element={isAuthenticated ? <Reports /> : <Navigate to="/login" />}
-        />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path='/compras' element={<ShoppingList />} />
-        <Route path='/logs' element={<Logs />} />
-      </Routes>
-    </Router>
-  );
+            </div>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      
+      <Route
+        path="/reportes"
+        element={isAuthenticated ? <Reports /> : <Navigate to="/login" />}
+      />
+      
+      <Route
+        path="/compras"
+        element={isAuthenticated ? <ShoppingList /> : <Navigate to="/login" />}
+      />
+      
+      <Route
+        path="/logs"
+        element={isAuthenticated ? <Logs /> : <Navigate to="/login" />}
+      />
+      
+      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route path="/register" element={<Register />} />
+    </Routes>
+  </>
+);
 }
