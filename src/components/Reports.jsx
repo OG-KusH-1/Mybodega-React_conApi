@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../services/api"; // ajusta ruta si tu api.js está en services/api.js
+import api from "../services/api";
 
 function Reports() {
   const [byCategory, setByCategory] = useState([]);
@@ -10,14 +10,24 @@ function Reports() {
   const loadReports = async () => {
     try {
       setLoading(true);
-      const resCategory = await api.get("/api/reports/by-category");
-      const resLowStock = await api.get("/api/reports/low-stock");
+      setError(null);
+      
+      console.log("📊 Cargando reportes...");
+      
+      // Cambiar rutas para que coincidan con tu API
+      const resCategory = await api.get("/reports/by-category");
+      const resLowStock = await api.get("/reports/low-stock");
 
-      setByCategory(resCategory.data); // [{category, count}, ...]
-      setLowStock(resLowStock.data); // [{id, nombre, cantidad}, ...]
+      console.log("✅ Reportes cargados:", {
+        categorias: resCategory.data.length,
+        bajoStock: resLowStock.data.length
+      });
+
+      setByCategory(resCategory.data);
+      setLowStock(resLowStock.data);
     } catch (err) {
-      console.error("Error cargando reportes:", err);
-      setError("No se pudieron cargar los reportes");
+      console.error("❌ Error cargando reportes:", err);
+      setError(err.response?.data?.message || "No se pudieron cargar los reportes");
     } finally {
       setLoading(false);
     }
@@ -27,46 +37,107 @@ function Reports() {
     loadReports();
   }, []);
 
-  if (loading) return <p>Cargando reportes...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) {
+    return (
+      <div className="container mt-4">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando reportes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger" role="alert">
+          <strong>Error:</strong> {error}
+          <button className="btn btn-sm btn-outline-danger ms-3" onClick={loadReports}>
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container">
-      <h1>📊 Reportes</h1>
+    <div className="container mt-4">
+      <h1 className="mb-4">📊 Reportes</h1>
 
-      <section>
-        <h2>Productos por Categoría</h2>
-        <table>
-          <thead>
-            <tr><th>Categoría</th><th>Total</th></tr>
-          </thead>
-          <tbody>
-            {byCategory.map((c, idx) => (
-              <tr key={idx}>
-                <td>{c.category}</td>
-                <td>{c.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <div className="row">
+        <div className="col-md-6 mb-4">
+          <div className="card">
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0">Productos por Categoría</h5>
+            </div>
+            <div className="card-body">
+              {byCategory.length === 0 ? (
+                <p className="text-muted">No hay datos disponibles</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Categoría</th>
+                        <th className="text-end">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {byCategory.map((c, idx) => (
+                        <tr key={idx}>
+                          <td>{c.category}</td>
+                          <td className="text-end">
+                            <span className="badge bg-primary">{c.count}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-      <section style={{ marginTop: 20 }}>
-        <h2>Productos con Bajo Stock (≤ 3)</h2>
-        <table>
-          <thead>
-            <tr><th>Producto</th><th>Cantidad</th></tr>
-          </thead>
-          <tbody>
-            {lowStock.map((p) => (
-              <tr key={p.id}>
-                <td>{p.nombre}</td>
-                <td style={{ color: "red" }}>{p.cantidad}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        <div className="col-md-6 mb-4">
+          <div className="card">
+            <div className="card-header bg-warning text-dark">
+              <h5 className="mb-0">Productos con Bajo Stock (≤ 3)</h5>
+            </div>
+            <div className="card-body">
+              {lowStock.length === 0 ? (
+                <div className="alert alert-success mb-0">
+                  ✅ No hay productos con bajo stock
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th className="text-end">Cantidad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lowStock.map((p) => (
+                        <tr key={p.id}>
+                          <td>{p.nombre}</td>
+                          <td className="text-end">
+                            <span className="badge bg-danger">{p.cantidad}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

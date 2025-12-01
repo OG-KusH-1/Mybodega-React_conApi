@@ -44,30 +44,76 @@ export default function App() {
 
   // CRUD usando IDs, asegurando que React re-renderice
   const handleAdd = async (producto) => {
-    const res = await ProductService.create(producto);
-    setInventario(prev => [...prev, res]);
+    try {
+      const res = await ProductService.create(producto);
+      setInventario(prev => [...prev, res]);
+    } catch (err) {
+      console.error("Error al agregar:", err);
+      // Si hay error 403 pero se agregó, recargar inventario
+      await fetchInventario();
+    }
   };
 
   const handleEdit = async (id, datos) => {
-    const res = await ProductService.update(id, datos);
-    setInventario(prev => prev.map(p => p.id === id ? res : p));
+    try {
+      const res = await ProductService.update(id, datos);
+      setInventario(prev => prev.map(p => p.id === id ? res : p));
+    } catch (err) {
+      console.error("Error al editar:", err);
+      // Si falla, recargar el inventario completo
+      await fetchInventario();
+    }
   };
 
   const handleDelete = async (id) => {
-    await ProductService.delete(id);
-    setInventario(prev => prev.filter(p => p.id !== id));
+    try {
+      await ProductService.delete(id);
+      setInventario(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+      // Si falla, recargar el inventario completo
+      await fetchInventario();
+    }
   };
 
   const handleConsume = async (id) => {
     const producto = inventario.find(p => p.id === id);
     if (!producto || producto.cantidad <= 0) return;
-    handleEdit(id, { ...producto, cantidad: producto.cantidad - 1 });
+    
+    // Actualizar localmente primero (optimistic update)
+    setInventario(prev => prev.map(p => 
+      p.id === id ? { ...p, cantidad: p.cantidad - 1 } : p
+    ));
+    
+    // Luego hacer la petición al backend
+    try {
+      await handleEdit(id, { ...producto, cantidad: producto.cantidad - 1 });
+    } catch (err) {
+      // Si falla, revertir
+      setInventario(prev => prev.map(p => 
+        p.id === id ? { ...p, cantidad: p.cantidad + 1 } : p
+      ));
+    }
   };
 
   const handleReabastecer = async (id) => {
     const producto = inventario.find(p => p.id === id);
     if (!producto) return;
-    handleEdit(id, { ...producto, cantidad: producto.cantidad + 1 });
+    
+    // Actualizar localmente primero (optimistic update)
+    setInventario(prev => prev.map(p => 
+      p.id === id ? { ...p, cantidad: p.cantidad + 1 } : p
+    ));
+    
+    // Luego hacer la petición al backend
+    try {
+      await handleEdit(id, { ...producto, cantidad: producto.cantidad + 1 });
+    } catch (err) {
+      // Si falla, revertir
+      setInventario(prev => prev.map(p => 
+        p.id === id ? { ...p, cantidad: p.cantidad - 1 } : p
+      ));
+    }
   };
 
   return (

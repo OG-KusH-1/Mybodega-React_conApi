@@ -1,8 +1,7 @@
 import axios from "axios";
 import AuthService from "./AuthService";
 
-const API_URL = "http://localhost:8090/api/products"; 
-// cambia el puerto según tu product-service
+const API_URL = "http://localhost:8090/api/products";
 
 class ProductService {
 
@@ -10,6 +9,7 @@ class ProductService {
     const token = AuthService.getToken();
     return {
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     };
